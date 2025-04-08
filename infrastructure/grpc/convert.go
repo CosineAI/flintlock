@@ -10,6 +10,16 @@ import (
 	"github.com/liquidmetal-dev/flintlock/pkg/ptr"
 )
 
+func validateMicroVMSpec(spec *types.MicroVMSpec) error {
+	if spec.Kernel == nil {
+		return fmt.Errorf("MicroVMSpec.Kernel is required")
+	}
+	if spec.Kernel.Image == "" {
+		return fmt.Errorf("MicroVMSpec.Kernel.Image is required")
+	}
+	return nil
+}
+
 func convertMicroVMToModel(spec *types.MicroVMSpec) (*models.MicroVM, error) {
 	uid := ""
 
@@ -20,6 +30,11 @@ func convertMicroVMToModel(spec *types.MicroVMSpec) (*models.MicroVM, error) {
 	vmid, err := models.NewVMID(spec.Id, spec.Namespace, uid)
 	if err != nil {
 		return nil, fmt.Errorf("creating vmid from spec: %w", err)
+	}
+
+	// Validate the spec
+	if err := validateMicroVMSpec(spec); err != nil {
+		return nil, err
 	}
 
 	convertedModel := &models.MicroVM{
